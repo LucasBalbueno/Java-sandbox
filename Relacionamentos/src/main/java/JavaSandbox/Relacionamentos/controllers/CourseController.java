@@ -1,6 +1,7 @@
 package JavaSandbox.Relacionamentos.controllers;
 
 import JavaSandbox.Relacionamentos.dto.CourseDTO;
+import JavaSandbox.Relacionamentos.dto.StudentDTO;
 import JavaSandbox.Relacionamentos.services.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -35,5 +36,10 @@ public class CourseController {
     public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
         courseService.deleteCourse(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/alunos")
+    public ResponseEntity<List<StudentDTO>> getAlunosByCurso(@PathVariable Long id){
+        return courseService.getAllAlunosByCurso(id);
     }
 }

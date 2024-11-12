@@ -1,9 +1,12 @@
 package JavaSandbox.Relacionamentos.services;
 
 import JavaSandbox.Relacionamentos.dto.CourseDTO;
+import JavaSandbox.Relacionamentos.dto.StudentDTO;
 import JavaSandbox.Relacionamentos.entities.CourseEntity;
+import JavaSandbox.Relacionamentos.entities.StudentEntity;
 import JavaSandbox.Relacionamentos.repositories.CourseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,6 +55,26 @@ public class CourseService {
 
     public void deleteCourse(Long id) {
         courseRepository.deleteById(id);
+    }
+
+    public ResponseEntity<List<StudentDTO>> getAllAlunosByCurso(Long id){
+        Optional<CourseEntity> courseEntityOptional = courseRepository.findById(id);
+        if(courseEntityOptional.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+
+        List<StudentDTO> studentDTOs = courseEntityOptional.get().getStudents().stream()
+                .map(this::convertToStudentDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(studentDTOs);
+    }
+
+    private StudentDTO convertToStudentDTO(StudentEntity studentEntity) {
+        StudentDTO studentDTO = new StudentDTO();
+        studentDTO.setStudentId(studentEntity.getStudentId());
+        studentDTO.setStudentName(studentEntity.getStudentName());
+        studentDTO.setStudentEmail(studentEntity.getStudentEmail());
+        return studentDTO;
     }
 
     private CourseDTO convertToDTO(CourseEntity courseEntity) {

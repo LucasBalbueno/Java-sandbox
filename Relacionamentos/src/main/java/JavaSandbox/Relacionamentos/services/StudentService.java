@@ -1,9 +1,14 @@
 package JavaSandbox.Relacionamentos.services;
 
+import JavaSandbox.Relacionamentos.dto.CourseDTO;
 import JavaSandbox.Relacionamentos.dto.StudentDTO;
+import JavaSandbox.Relacionamentos.entities.CourseEntity;
 import JavaSandbox.Relacionamentos.entities.StudentEntity;
+import JavaSandbox.Relacionamentos.repositories.CourseRepository;
 import JavaSandbox.Relacionamentos.repositories.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,11 +21,14 @@ public class StudentService {
     @Autowired
     private StudentRepository studentRepository;
 
+    @Autowired
+    private CourseRepository courseRepository;
+
     public List<StudentDTO> getAllStudents() {
         return studentRepository
                 .findAll()
                 .stream()
-                .map(this::convetToDTO)
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -31,7 +39,7 @@ public class StudentService {
 
         studentRepository.save(studentEntity);
 
-        return convetToDTO(studentEntity);
+        return convertToDTO(studentEntity);
     }
 
     public StudentDTO updateStudent(Long id, StudentDTO studentDTO) {
@@ -44,7 +52,7 @@ public class StudentService {
 
             studentRepository.save(studentEntity);
 
-            return convetToDTO(studentEntity);
+            return convertToDTO(studentEntity);
         }
 
         return null;
@@ -54,12 +62,71 @@ public class StudentService {
         studentRepository.deleteById(id);
     }
 
-    private StudentDTO convetToDTO(StudentEntity studentEntity) {
+    public ResponseEntity<StudentDTO> enrollStudentToCourse(Long studentId, Long courseId){
+        Optional<StudentEntity> studentEntityOptional = studentRepository.findById(studentId);
+        Optional<CourseEntity> courseEntityOptional = courseRepository.findById(courseId);
+
+        if(studentEntityOptional.isEmpty() || courseEntityOptional.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        StudentEntity studentEntity = studentEntityOptional.get();
+        CourseEntity courseEntity = courseEntityOptional.get();
+
+        studentEntity.getCourses().add(courseEntity);
+        studentRepository.save(studentEntity);
+
+        return ResponseEntity.ok(convertToDTO(studentEntity));
+    }
+
+    public ResponseEntity<StudentDTO> unenrollStudentFromCourse(Long studentId, Long courseId){
+        Optional<StudentEntity> studentEntityOptional = studentRepository.findById(studentId);
+        Optional<CourseEntity> courseEntityOptional = courseRepository.findById(courseId);
+
+        if(studentEntityOptional.isEmpty() || courseEntityOptional.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        StudentEntity studentEntity = studentEntityOptional.get();
+        CourseEntity courseEntity = courseEntityOptional.get();
+
+        studentEntity.getCourses().remove(courseEntity);
+        studentRepository.save(studentEntity);
+
+        return ResponseEntity.ok(convertToDTO(studentEntity));
+    }
+
+    public ResponseEntity<List<CourseDTO>> getCoursesByStudent(Long studentId){
+        Optional<StudentEntity> studentEntityOptional = studentRepository.findById(studentId);
+
+        if(studentEntityOptional.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        List<CourseDTO> courseDTOs = studentEntityOptional.get().getCourses().stream()
+                .map(this::convertToCourseDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(courseDTOs);
+    }
+
+    private StudentDTO convertToDTO(StudentEntity studentEntity) {
         StudentDTO studentDTO = new StudentDTO();
         studentDTO.setStudentId(studentEntity.getStudentId());
         studentDTO.setStudentName(studentEntity.getStudentName());
         studentDTO.setStudentEmail(studentEntity.getStudentEmail());
+        studentDTO.setCourses(studentEntity.getCourses().stream()
+                .map(this::convertToCourseDTO)
+                .collect(Collectors.toList()));
 
         return studentDTO;
+    }
+
+    private CourseDTO convertToCourseDTO(CourseEntity courseEntity) {
+        CourseDTO courseDTO = new CourseDTO();
+        courseDTO.setCourseId(courseEntity.getCourseId());
+        courseDTO.setCourseName(courseEntity.getCourseName());
+        courseDTO.setCourseDescription(courseEntity.getCourseDescription());
+        return courseDTO;
     }
 }

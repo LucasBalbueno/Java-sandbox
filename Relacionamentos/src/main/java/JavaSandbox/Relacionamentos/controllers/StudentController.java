@@ -1,5 +1,6 @@
 package JavaSandbox.Relacionamentos.controllers;
 
+import JavaSandbox.Relacionamentos.dto.CourseDTO;
 import JavaSandbox.Relacionamentos.dto.StudentDTO;
 import JavaSandbox.Relacionamentos.services.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,5 +36,20 @@ public class StudentController {
     public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
         studentService.deleteStudent(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{studentId}/cursos/{courseId}")
+    public ResponseEntity<StudentDTO> enrollStudentToCourse(@PathVariable Long studentId, @PathVariable Long courseId){
+        return studentService.enrollStudentToCourse(studentId, courseId);
+    }
+
+    @DeleteMapping("/{studentId}/cursos/{courseId}")
+    public ResponseEntity<StudentDTO> unenrollStudentFromCourse(@PathVariable Long studentId, @PathVariable Long courseId){
+        return studentService.unenrollStudentFromCourse(studentId, courseId);
+    }
+
+    @GetMapping("/{studentId}/cursos")
+    public ResponseEntity<List<CourseDTO>> getCoursesByStudent(@PathVariable Long studentId){
+        return studentService.getCoursesByStudent(studentId);
     }
 }
