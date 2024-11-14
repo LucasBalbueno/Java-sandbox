@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,6 +37,10 @@ public class StudentService {
         StudentEntity studentEntity = new StudentEntity();
         studentEntity.setStudentName(studentDTO.getStudentName());
         studentEntity.setStudentEmail(studentDTO.getStudentEmail());
+
+        if (studentEntity.getCourses() == null) {
+            studentEntity.setCourses(new ArrayList<>());
+        }
 
         studentRepository.save(studentEntity);
 
