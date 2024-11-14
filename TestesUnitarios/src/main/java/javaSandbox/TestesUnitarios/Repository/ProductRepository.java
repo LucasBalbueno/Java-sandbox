@@ -1,4 +1,8 @@
 package javaSandbox.TestesUnitarios.Repository;
 
-public class ProductRepository {
+import javaSandbox.TestesUnitarios.Entity.ProductEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
+
 }
